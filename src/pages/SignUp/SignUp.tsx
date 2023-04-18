@@ -2,8 +2,24 @@ import React, { useState } from 'react';
 import * as S from './SignUpStyle';
 import { useNavigate } from 'react-router-dom';
 
+interface UserInputList {
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+  nickname: string;
+}
+
 const SignUp = () => {
-  const [userInfo, setUserInfo] = useState<Record<string, string>>({});
+  const [userInfo, setUserInfo] = useState<UserInputList>({
+    email: '',
+    password: '',
+    firstName: '',
+    lastName: '',
+    nickname: '',
+  });
+
+  const { email, password, firstName, lastName, nickname } = userInfo;
 
   const navigate = useNavigate();
 
@@ -14,6 +30,30 @@ const SignUp = () => {
 
   const onSubmitForm = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    fetch(`${BASE_URL}/users/signup`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json;charset=utf-8',
+      },
+      body: JSON.stringify({
+        email: email,
+        password: password,
+        firstName: firstName,
+        lastName: lastName,
+        nickname: nickname,
+      }),
+    })
+      .then(response => {
+        if (response.status === 201) {
+          navigate('/signin');
+        } else {
+          alert('이미 가입된 이메일입니다.');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert('에러가 발생했습니다. 다시 시도해주세요.');
+      });
   };
 
   const goToSignIn = () => {
@@ -50,18 +90,19 @@ export default SignUp;
 
 const signUpInfo = [
   { id: 1, name: 'email', type: 'email', placeholder: '이메일 주소' },
-  { id: 2, name: 'name', type: 'text', placeholder: '성명' },
-  { id: 3, name: 'nickname', type: 'text', placeholder: '사용자 이름' },
   {
-    id: 4,
+    id: 2,
     name: 'password',
     type: 'password',
     placeholder: '비밀번호(8자 이상)',
   },
   {
-    id: 5,
+    id: 3,
     name: 'passwordCheck',
     type: 'password',
     placeholder: '비밀번호 확인',
   },
+  { id: 4, name: 'firstName', type: 'text', placeholder: '이름' },
+  { id: 5, name: 'lastName', type: 'text', placeholder: '성' },
+  { id: 6, name: 'nickname', type: 'text', placeholder: '별명' },
 ];
