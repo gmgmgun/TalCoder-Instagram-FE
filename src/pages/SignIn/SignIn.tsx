@@ -1,19 +1,42 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import * as S from './SignInStyle';
 import { useNavigate } from 'react-router-dom';
 import { BASE_URL } from '../../config';
 
+interface UserInputList {
+  email: string;
+  password: string;
+}
+
+interface SignInResponse {
+  firstName: string;
+  lastName: string;
+  nickname: string;
+}
+
 const SignIn = () => {
-  const [input, setInput] = useState<Record<string, string>>({
-    id: '',
-    pw: '',
+  const [input, setInput] = useState<UserInputList>({
+    email: '',
+    password: '',
   });
 
-  const { id, pw } = input;
+  const [userInfo, setUserInfo] = useState<SignInResponse>({
+    firstName: '',
+    lastName: '',
+    nickname: '',
+  });
+
+  const { email, password } = input;
 
   const navigate = useNavigate();
 
-  const isValid = id.length >= 5 && id.includes('@') && pw.length >= 5;
+  const emailRegEx = /.*@.*/;
+  const pwRegEx = /^(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
+
+  const emailCheck = emailRegEx.test(email);
+  const pwCheck = pwRegEx.test(password);
+
+  const isValid = emailCheck && pwCheck;
 
   const onChangeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -31,14 +54,16 @@ const SignIn = () => {
         'Content-Type': 'application/json;charset=utf-8',
       },
       body: JSON.stringify({
-        email: id,
-        password: pw,
+        email: email,
+        password: password,
       }),
     })
       .then(response => response.json())
-      .then(result => {
-        if (result.JWT) {
-          localStorage.setItem('token', result.JWT);
+      .then(data => {
+        const { JWT, firstName, lastName, nickname } = data;
+        if (JWT) {
+          localStorage.setItem('token', JWT);
+          setUserInfo({ firstName, lastName, nickname });
           navigate('/');
         } else {
           alert('입력이 틀렸습니다');
@@ -52,23 +77,25 @@ const SignIn = () => {
     );
   };
 
+  useEffect(() => {
+    localStorage.setItem('userInfo', JSON.stringify(userInfo));
+  }, [userInfo]);
+
   return (
     <S.SignIn>
       <S.SignInWrap>
         <S.Heading>Instagram</S.Heading>
         <S.InputContainer>
           <S.Input
-            name="id"
-            type="text"
+            name="email"
+            type="email"
             placeholder="전화번호, 사용자 이름 또는 이메일"
-            className="inputId"
             onChange={onChangeInput}
           />
           <S.Input
-            name="pw"
+            name="password"
             type="password"
             placeholder="비밀번호"
-            className="inputPw"
             onChange={onChangeInput}
           />
         </S.InputContainer>
