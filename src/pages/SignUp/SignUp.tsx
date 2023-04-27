@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import * as S from './SignUpStyle';
 import { useNavigate } from 'react-router-dom';
+import { BASE_URL } from '../../config';
 
 interface UserInputList {
   email: string;
@@ -22,6 +23,8 @@ const SignUp = () => {
   const { email, password, firstName, lastName, nickname } = userInfo;
 
   const navigate = useNavigate();
+
+  const isValid = email && password && firstName && lastName && nickname;
 
   const onChangeUserInfo = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -63,7 +66,7 @@ const SignUp = () => {
   return (
     <S.SignUp>
       <S.SignUpWrap>
-        <S.Title>Instagram</S.Title>
+        <S.Heading>Instagram</S.Heading>
         <S.Text>친구들의 사진과 동영상을 보려면 가입하세요.</S.Text>
         <S.SignUpForm onSubmit={onSubmitForm}>
           {signUpInfo.map(({ id, name, type, placeholder }) => (
@@ -75,7 +78,10 @@ const SignUp = () => {
               onChange={onChangeUserInfo}
             />
           ))}
-          <S.ButtonSubmit type="submit">가입</S.ButtonSubmit>
+          <S.ButtonSubmit type="submit" disabled={!isValid}>
+            {' '}
+            가입
+          </S.ButtonSubmit>
         </S.SignUpForm>
       </S.SignUpWrap>
       <S.GoToSignInWrap>
